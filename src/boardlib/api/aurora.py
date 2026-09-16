@@ -1,9 +1,10 @@
 import datetime
 import os
 import uuid
+from typing import Optional
 
-import requests
 import pandas as pd
+import requests
 
 import boardlib.db.aurora
 
@@ -677,7 +678,9 @@ def unfollow(board: str, token: str, your_user_id: int, id_to_follow: int):
     return response.json()
 
 
-def get_notifications(board: str, token: str, included_types: list[str] = None):
+def get_notifications(
+    board: str, token: str, included_types: Optional[list[str]] = None
+):
     """
     Get all notifications for the given user
     :param board:
@@ -709,7 +712,7 @@ def get_notifications(board: str, token: str, included_types: list[str] = None):
 
 def difficulty_to_grade(difficulty_mapping, difficulty):
     return (
-        difficulty_mapping.get(int(round(difficulty)), None)
+        difficulty_mapping.get(round(difficulty), None)
         if difficulty is not None
         else None
     )

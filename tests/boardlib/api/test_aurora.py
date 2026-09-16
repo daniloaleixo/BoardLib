@@ -4,7 +4,7 @@ import unittest.mock
 import requests
 
 import boardlib.api.aurora
-from tests.boardlib.api.requests_mocks import get_mock_request, MockResponse
+from tests.boardlib.api.requests_mocks import get_mock_request
 
 
 class TestAurora(unittest.TestCase):

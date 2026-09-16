@@ -2,8 +2,8 @@ import requests
 
 
 class MockResponse:
-    def __init__(self, json_data={}, status_code=requests.codes.ok, text=None):
-        self.json_data = json_data
+    def __init__(self, json_data=None, status_code=requests.codes.ok, text=None):
+        self.json_data = {} if json_data is None else json_data
         self.status_code = status_code
         self.text = text
 

@@ -5,7 +5,6 @@ import zipfile
 
 import requests
 
-
 APP_PACKAGE_NAMES = {
     "aurora": "auroraboard",
     "decoy": "decoyboard",
@@ -38,16 +37,19 @@ def download_database(board, output_file):
 
     bundle_file = io.BytesIO(response.content)
     with zipfile.ZipFile(bundle_file, "r") as zip_file:
-        try: 
-            apk_file = io.BytesIO(zip_file.read(f"com.auroraclimbing.{app_package_name}.apk"))
+        try:
+            apk_file = io.BytesIO(
+                zip_file.read(f"com.auroraclimbing.{app_package_name}.apk")
+            )
         except KeyError:
             # Fallback to old APK directory structure to support older versions
-            with open(output_file, "wb") as output_file:
-                output_file.write(zip_file.read("assets/db.sqlite3"))
+            with open(output_file, "wb") as db_file:
+                db_file.write(zip_file.read("assets/db.sqlite3"))
         else:
-            with zipfile.ZipFile(apk_file, "r") as main_zip:
-                with open(output_file, "wb") as output_file:
-                    output_file.write(main_zip.read("assets/db.sqlite3"))
+            with zipfile.ZipFile(apk_file, "r") as main_zip, open(
+                output_file, "wb"
+            ) as db_file:
+                db_file.write(main_zip.read("assets/db.sqlite3"))
 
 
 def get_shared_syncs(database):
