@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Personal fork of `lemeryfertitta/BoardLib`, used to pull climbing logbook data and explore it in `analysis.ipynb`. Changes are not expected to go upstream. There is no `upstream` remote configured.
 
-`analysis.ipynb` reads a CSV named literally `output` from the repo root — produced by the `logbook` command. Its extra imports (`matplotlib`, `numpy`, `seaborn`) are the `analysis` optional extra: `pip install -e ".[analysis]"`. They are deliberately kept out of `[project.dependencies]` so `pip install boardlib` does not pull plotting libraries.
+`analysis.ipynb` reads a CSV named literally `output` from the repo root — produced by the `logbook` command, or by `tools/kilter_logbook.py` for Kilter. Its extra imports (`matplotlib`, `numpy`, `seaborn`) are the `analysis` optional extra: `pip install -e ".[analysis]"`. They are deliberately kept out of `[project.dependencies]` so `pip install boardlib` does not pull plotting libraries.
 
 ## Setup
 
@@ -42,13 +42,30 @@ All tests mock `requests`; none touch the network. Nothing runs tests or lint in
 
 ## Credentials
 
-Board passwords come from a `{BOARD}_PASSWORD` env var — `KILTER_PASSWORD`, `TENSION_PASSWORD`, `MOON2019_PASSWORD` (`__main__.py:get_password`). There is no password CLI flag; the fallback is an interactive `getpass` prompt.
+Secrets live in `.env` in the repo root (gitignored). Read a value with `sed -n 's/^KEY=//p' .env` and pass it straight into the process — `source .env` does not reliably export into child processes here, and the `xargs` idiom word-splits on spaces and strips quotes.
+
+`boardlib` itself reads a `{BOARD}_PASSWORD` env var — `TENSION_PASSWORD`, `MOON2019_PASSWORD` (`__main__.py:get_password`). There is no password CLI flag, and the fallback is an interactive `getpass` prompt that hangs when no terminal is attached.
+
+Kilter is different: it needs `KILTER_USERNAME` (an email) as well as `KILTER_PASSWORD`, because the new stack authenticates against Keycloak rather than a board account name. Keycloak reports a wrong username and a wrong password identically, so failed logins are not worth guessing at — and repeats risk a lockout.
 
 ## Adding a board
 
-Aurora-family boards (kilter, tension, decoy, grasshopper, soill, touchstone, aurora) are registered in two parallel dicts — `HOST_BASES` in `src/boardlib/api/aurora.py` and `APP_PACKAGE_NAMES` in `src/boardlib/db/aurora.py`. Adding an entry to both is enough; argparse derives its `choices` from `HOST_BASES`. Moonboard variants live in `BOARD_IDS` and `ANGLES_TO_IDS` in `src/boardlib/api/moon.py`.
+Aurora-family boards (tension, decoy, grasshopper, soill, touchstone, aurora — no longer kilter, see below) are registered in two parallel dicts — `HOST_BASES` in `src/boardlib/api/aurora.py` and `APP_PACKAGE_NAMES` in `src/boardlib/db/aurora.py`. Adding an entry to both is enough; argparse derives its `choices` from `HOST_BASES`. Moonboard variants live in `BOARD_IDS` and `ANGLES_TO_IDS` in `src/boardlib/api/moon.py`.
 
 A genuinely new provider needs more: board-family dispatch is a hardcoded `board.startswith("moon")` check in `__main__.py`.
+
+## Kilter left Aurora (March 2026)
+
+Aurora shut down the Kilter backend; `kilterboardapp.com` now fails during the TLS handshake for every client, from every network. `boardlib logbook kilter` therefore cannot work and is not fixable — retrying is pointless. The other Aurora boards were unaffected.
+
+The new app uses Keycloak (`idp.kiltergrips.com`, realm `kilter`, public client `kilter`, password grant) and syncs rows over PowerSync (`POST sync1.kiltergrips.com/sync/stream`). `tools/kilter_sync.py` implements a read-only client for that stream; `tools/kilter_logbook.py` turns it into the standard `LOGBOOK_FIELDS` CSV. Run them via `/refresh-logbook`.
+
+Ascents arrive in a `logs` table carrying `climb_uuid` but no names or grades. Those come from the Aurora-era `kilter.sqlite3`: Kilter kept the climb UUIDs across the split, and all 39 difficulty-grade IDs are unchanged, so the old catalogue is still a correct lookup table. Two consequences worth knowing:
+
+- Climbs set *after* the split cannot be named, and export as `(unknown climb <prefix>)`. The count grows slowly; it is not a regression.
+- `kilter.sqlite3` is effectively irreplaceable — it comes from the old Android app on apkpure, and nothing else publishes Kilter climb names. Do not delete it.
+
+`logs` has no comment or mirror field, so `comment` is always empty and `is_mirror` is always `False` in Kilter exports.
 
 ## Network behaviour to preserve
 
@@ -60,6 +77,8 @@ A genuinely new provider needs more: board-family dispatch is a hardcoded `board
 ## Command order
 
 For Aurora boards, `database` must run before `logbook` or `images` — the logbook joins against the local SQLite for climb names and grades. Moonboard is logbook-only and needs no database.
+
+Kilter needs `kilter.sqlite3` too, but download it **without** `-u`: omitting the username skips the sync, and the sync is the half that would try to reach the dead Aurora host.
 
 ## Commits
 
