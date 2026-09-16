@@ -22,3 +22,16 @@ boardlib = "boardlib.__main__:main"
 [project.urls]
 Homepage = "https://github.com/lemeryfertitta/BoardLib"
 Issues = "https://github.com/lemeryfertitta/BoardLib/issues"
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+# analysis.ipynb is exploratory work, not maintained source.
+extend-exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+# Pinned explicitly: ruff's implicit default set is large and shifts between
+# releases, so this repo states what it wants instead of inheriting it.
+# E501 is deliberately absent -- 28 existing lines exceed 88 chars and
+# reflowing them would bury real changes in formatting noise.
+select = ["E4", "E7", "E9", "F", "I", "B", "SIM", "ISC", "RUF"]
