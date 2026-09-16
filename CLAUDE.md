@@ -24,13 +24,15 @@ Run from the repo root (the suites import `tests.boardlib.api.requests_mocks` by
 python -m unittest discover
 ```
 
-**`tests/boardlib/api/test_aurora.py` is stale and fails.** It patches `get_climb_stats`, `user_sync`, and `get_climb_name` — none of which exist in `src/boardlib/api/aurora.py` anymore (`get_climb_name` moved to `boardlib.db.aurora`, `user_sync` became `sync`). Treat those failures as pre-existing, not as something a change broke. `test_moon.py` is current and should pass.
+**`tests/boardlib/api/test_aurora.py` is stale and fails.** It patches `get_climb_stats`, `user_sync`, and `get_climb_name` — none of which exist in `src/boardlib/api/aurora.py` anymore (`get_climb_name` moved to `boardlib.db.aurora`, `user_sync` became `sync`). Treat those 6 errors as pre-existing, not as something a change broke.
+
+`test_moon.py` runs (14 tests) but `test_logbook_entries` also fails pre-existing: `moon.py:164` reads `entry["Problem"]["Grade"]` and the mock fixture has no `Grade` key. Baseline is 1 error there.
 
 All tests mock `requests`; none touch the network. Nothing runs tests or lint in CI — the only workflow publishes to PyPI on release.
 
 ## Lint
 
-`ruff check .`, configured in `pyproject.toml`. `E501` is off on purpose: 28 existing lines exceed 88 chars, and reflowing them would bury real changes in formatting noise. Do not run `ruff format` across the repo for the same reason.
+`ruff check .`, configured in `pyproject.toml`. The rule set is pinned explicitly rather than inheriting ruff's implicit defaults, which span 400+ rules and shift between releases. `analysis.ipynb` is excluded. `E501` is off on purpose: 28 existing lines exceed 88 chars, and reflowing them would bury real changes in formatting noise. Do not run `ruff format` across the repo for the same reason.
 
 ## Python version
 
