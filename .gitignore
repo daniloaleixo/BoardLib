@@ -4,3 +4,9 @@
 tmp
 dist
 __pycache__/
+
+# Board data pulled by the CLI — personal logbook and multi-MB board databases
+output
+*.sqlite
+*.sqlite3
+*.db
