@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Personal fork of `lemeryfertitta/BoardLib`, used to pull climbing logbook data and explore it in `analysis.ipynb`. Changes are not expected to go upstream. There is no `upstream` remote configured.
 
-`analysis.ipynb` reads a CSV named literally `output` from the repo root — produced by the `logbook` command. It also imports `matplotlib`, `seaborn`, and `numpy`, none of which are declared in `pyproject.toml` or `requirements.txt`; install them separately.
+`analysis.ipynb` reads a CSV named literally `output` from the repo root — produced by the `logbook` command. Its extra imports (`matplotlib`, `numpy`, `seaborn`) are the `analysis` optional extra: `pip install -e ".[analysis]"`. They are deliberately kept out of `[project.dependencies]` so `pip install boardlib` does not pull plotting libraries.
 
 ## Setup
 
@@ -15,6 +15,8 @@ The `src/` layout means nothing importable works until the package is installed:
 ```
 python3 -m venv .venv && source .venv/bin/activate && pip install -e .
 ```
+
+Add the notebook's plotting stack with `pip install -e ".[analysis]"`.
 
 ## Tests
 

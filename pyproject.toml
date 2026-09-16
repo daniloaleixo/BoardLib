@@ -16,6 +16,11 @@ classifiers = [
 ]
 dependencies = ["bs4", "requests", "pandas"]
 
+[project.optional-dependencies]
+# Used only by analysis.ipynb, not by the library or CLI.
+# Install with: pip install -e ".[analysis]"
+analysis = ["matplotlib", "numpy", "seaborn"]
+
 [project.scripts]
 boardlib = "boardlib.__main__:main"
 
