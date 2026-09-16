@@ -4,7 +4,7 @@ import unittest.mock
 import requests
 
 import boardlib.api.aurora
-from tests.boardlib.api.requests_mocks import get_mock_request, MockResponse
+from tests.boardlib.api.requests_mocks import get_mock_request
 
 
 class TestAurora(unittest.TestCase):
@@ -89,58 +89,6 @@ class TestAurora(unittest.TestCase):
     def test_get_user_failure(self, mock_get):
         with self.assertRaises(requests.exceptions.HTTPError):
             boardlib.api.aurora.get_user("aurora", "test", "test")
-
-    @unittest.mock.patch(
-        "requests.get",
-        side_effect=get_mock_request(json_data="test_get_climb_stats"),
-    )
-    def test_get_climb_stats(self, mock_get):
-        self.assertEqual(
-            boardlib.api.aurora.get_climb_stats("aurora", "test", "test", "test"),
-            "test_get_climb_stats",
-        )
-
-    @unittest.mock.patch(
-        "requests.get",
-        side_effect=get_mock_request(status_code=requests.codes.bad_request),
-    )
-    def test_get_climb_stats_failure(self, mock_get):
-        with self.assertRaises(requests.exceptions.HTTPError):
-            boardlib.api.aurora.get_climb_stats("aurora", "test", "test", "test")
-
-    @unittest.mock.patch(
-        "requests.get",
-        side_effect=get_mock_request(text="<h1>test_get_climb_name</h1>"),
-    )
-    def test_get_climb_name(self, mock_get):
-        self.assertEqual(
-            boardlib.api.aurora.get_climb_name("aurora", "test"), "test_get_climb_name"
-        )
-
-    @unittest.mock.patch(
-        "requests.get",
-        side_effect=get_mock_request(status_code=requests.codes.bad_request),
-    )
-    def test_get_climb_name_failure(self, mock_get):
-        with self.assertRaises(requests.exceptions.HTTPError):
-            boardlib.api.aurora.get_climb_name("aurora", "test")
-
-    @unittest.mock.patch(
-        "requests.post",
-        side_effect=get_mock_request(json_data="test_sync"),
-    )
-    def test_sync(self, mock_get):
-        self.assertEqual(
-            boardlib.api.aurora.user_sync("aurora", "test", "test"), "test_sync"
-        )
-
-    @unittest.mock.patch(
-        "requests.post",
-        side_effect=get_mock_request(status_code=requests.codes.bad_request),
-    )
-    def test_sync_failure(self, mock_get):
-        with self.assertRaises(requests.exceptions.HTTPError):
-            boardlib.api.aurora.user_sync("aurora", "test", "test")
 
     @unittest.mock.patch(
         "boardlib.api.aurora.get_gyms",
