@@ -57,12 +57,12 @@ class TestMoon(unittest.TestCase):
             ["test1", "test2"],
         )
 
-    def test_logbook_pages(self):
+    def test_logbook_pages_raises_for_error_status(self):
         mock_session = MockSession(MockResponse(status_code=requests.codes.bad_request))
         with self.assertRaises(requests.exceptions.HTTPError):
             list(boardlib.api.moon.logbook_pages(mock_session, "moon2016"))
 
-    def raw_logbook_entries_for_page(self):
+    def test_raw_logbook_entries_for_page(self):
         mock_session = MockSession(
             MockResponse(
                 json_data={
